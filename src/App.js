@@ -3,26 +3,65 @@ import "./App.css";
 import HomePages from "./pages/HomePages";
 import MovieDetails from "./pages/MovieDetails";
 import BrowsePage from "./pages/BrowsePage";
-import Layout from "./layouts/Layout";
-import { AuthProvider } from "./contexts/AuthContext";
+
+import MainLayout from "./layouts/Layout";
 import LoginPage from "./pages/LoginPage";
-import { FavoriteProvider } from "./contexts/FavoriteContext";
+import DataContextProvider from "./contexts/DataContext";
+import AccountPage from "./pages/AccountPage";
+import { AuthProvider } from "./contexts/AuthContext";
+import { useLocation } from "react-router-dom";
+import FavoriteContextProvider from "./contexts/FavoriteContext";
+import AuthRequire from "./contexts/AuthRequire";
+import { createTheme } from "@mui/material";
+import { ThemeProvider } from "@mui/system";
+
 
 function App() {
+  const location = useLocation();
+  const theme = createTheme({
+    palette: {
+      primary: {
+        main: "#00b4cc",
+      },
+      secondary: {
+        main: "#9dbfaf",
+      },
+    },
+  });
   return (
     <div className="App">
-      <AuthProvider>
-        <FavoriteProvider>
-          <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<HomePages />} />
-              <Route path="/browser" element={<BrowsePage />} />
-              <Route path="/movie/:movieId" element={<MovieDetails />} />
-              <Route path="/login" element={<LoginPage />} />
-            </Route>
-          </Routes>
-        </FavoriteProvider>
-      </AuthProvider>
+
+      <>
+        <ThemeProvider theme={theme}>
+          <AuthProvider>
+            <FavoriteContextProvider>
+              <Routes location={location.state?.backgroundLocation || location}>
+                <Route element={<MainLayout />}>
+                  <Route path="/" element={<HomePages />} />
+                  <Route
+                    path="/browser"
+                    element={
+                      <DataContextProvider>
+                        <BrowsePage />
+                      </DataContextProvider>
+                    }
+                  />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route
+                    path="/favorite"
+                    element={
+                      <AuthRequire>
+                        <AccountPage />
+                      </AuthRequire>
+                    }
+                  />
+                  <Route path="/movie/:movieId" element={<MovieDetails />} />
+                </Route>
+              </Routes>
+            </FavoriteContextProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </>
     </div>
   );
 }

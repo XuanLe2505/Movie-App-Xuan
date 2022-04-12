@@ -1,71 +1,65 @@
-import { createContext, useReducer, useEffect } from "react";
-import useFavorite from "../hooks/useFavorite";
+
+import { createContext, useReducer } from "react";
 
 const initialState = {
-  isInitialized: false,
   isAuthenticated: false,
   user: null,
 };
-const AuthContext = createContext();
 
-const INITIALIZATION = "INITIALIZATION";
 const LOGIN_SUCCESS = "LOGIN_SUCCESS";
 const LOGOUT = "LOGOUT";
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case INITIALIZATION:
-      const { isAuthenticated, user } = action.payload;
+
+    case LOGIN_SUCCESS:
       return {
         ...state,
-        isAuthenticated,
-        user,
-        isInitialized: true,
+        isAuthenticated: true,
+        user: action.payload.user,
       };
-    case LOGIN_SUCCESS:
-      return { ...state, isAuthenticated: true, user: action.payload.user };
     case LOGOUT:
-      return { ...state, isAuthenticated: false, user: null };
+      return {
+        ...state,
+        isAuthenticated: false,
+        user: null,
+      };
+
     default:
       return state;
   }
 };
 
+
+const AuthContext = createContext({ ...initialState });
+
 function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { resetMovie } = useFavorite();
 
-  useEffect(() => {
-    const username = window.localStorage.getItem("username");
-    if (username) {
-      dispatch({
-        type: INITIALIZATION,
-        payload: { isAuthenticated: true, user: { username } },
-      });
-    } else {
-      dispatch({
-        type: INITIALIZATION,
-        payload: { isAuthenticated: false, user: null },
-      });
-    }
-  }, []);
-
-  const login = (username, cb) => {
-    dispatch({ type: LOGIN_SUCCESS, payload: { user: { username } } });
-    window.localStorage.setItem("username", username);
-    cb();
+  const login = async (username, callback) => {
+    dispatch({
+      type: LOGIN_SUCCESS,
+      payload: { user: { username } },
+    });
+    callback();
   };
 
-  const logout = (cb) => {
+  const logout = async (callback) => {
     dispatch({ type: LOGOUT });
-    window.localStorage.removeItem("username");
-    resetMovie();
-
-    cb();
+    if (callback) {
+      callback();
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        ...state,
+        login,
+        logout,
+      }}
+    >
+
       {children}
     </AuthContext.Provider>
   );

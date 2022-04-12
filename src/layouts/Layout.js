@@ -1,14 +1,20 @@
+
+import { Box, Stack } from "@mui/material";
 import React from "react";
 import { Outlet } from "react-router-dom";
-import Navbar from "./Navbar";
+import MainFooter from "./MainFooter";
 
-function Layout() {
+import MainHeader from "./MainHeader";
+
+function MainLayout() {
   return (
-    <div>
-      <Navbar />
+    <Stack sx={{ minHeight: "100vh" }}>
+      <MainHeader />
       <Outlet />
-    </div>
+      <Box sx={{ flexGrow: 1 }} />
+      <MainFooter />
+    </Stack>
   );
 }
 
-export default Layout;
+export default MainLayout;

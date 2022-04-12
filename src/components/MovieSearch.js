@@ -1,25 +1,28 @@
 import React from "react";
-import useSearch from "../hooks/useSearch";
-import { Button, Stack, TextField } from "@mui/material";
+import useData from "../hooks/useData";
+import {  Stack } from "@mui/material";
+
 
 function MovieSearch() {
   let {
-    keyword: searchInput,
-    change: setSearchInput,
+    search: searchInput,
+    setSearch: setSearchInput,
     submit: onSubmit,
-  } = useSearch();
+  } = useData();
 
   return (
     <Stack direction="row" spacing={2}>
-      <form onSubmit={onSubmit}>
-        <TextField
+      <form onSubmit={onSubmit} className="search-form">
+        <input
           name="searchQuery"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
+          className="search-input"
         />
-        <Button type="submit" variant="contained">
+
+        <button type="submit" className="search-button">
           Search
-        </Button>
+        </button>
       </form>
     </Stack>
   );

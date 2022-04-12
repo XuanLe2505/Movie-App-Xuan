@@ -1,23 +1,13 @@
 import React, { useState, useEffect } from "react";
-import SearchContextProvider from "../contexts/SearchContext";
-import MovieSearch from "../components/MovieSearch";
-// import SortContextProvider from "../contexts/SortContext";
-// import FormProvider from "../components/form/FormProvider";
-// import MovieSort from "../components/MovieSort";
-// import { useForm } from "react-hook-form";
+
 import tmdbApi from "../app/tmdbApi";
-import { Alert, Box, Container, Stack, Typography } from "@mui/material";
-// import MovieList from "../components/MovieList";
+import { Alert, Box, Container, Stack } from "@mui/material";
+
 import LoadingScreen from "../components/LoadingScreen";
 import MovieScroll from "../components/MovieScroll";
 import MovieCarousel from "../components/MovieCarousel";
 
-// const defaultValues = {
-//   sortBy: "popularity.desc",
-//   searchQuery: "",
-// };
 function HomePages() {
-  // const methods = useForm({ defaultValues });
   const [moviesPop, setMoviesPop] = useState([]);
   const [moviesNPlaying, setMoviesNPlaying] = useState([]);
   const [moviesUC, setMoviesUC] = useState([]);
@@ -119,8 +109,8 @@ function HomePages() {
           )}
         </Box>
 
-        <Box sx={{ position: "relative", height: 1 }}>
-          <h2> Popular</h2>
+        <Box sx={{ position: "relative", height: 1 }} className="section">
+          <h2 className="section-title"> Popular</h2>
           {loading ? (
             <LoadingScreen />
           ) : (
@@ -136,8 +126,8 @@ function HomePages() {
           )}
         </Box>
 
-        <Box sx={{ position: "relative", height: 1 }}>
-          <h2>Now Playing</h2>
+        <Box sx={{ position: "relative", height: 1 }} className="section">
+          <h2 className="section-title">Now Playing</h2>
           {loading ? (
             <LoadingScreen />
           ) : (
@@ -153,8 +143,8 @@ function HomePages() {
           )}
         </Box>
 
-        <Box sx={{ position: "relative", height: 1 }}>
-          <h2>Up Coming</h2>
+        <Box sx={{ position: "relative", height: 1 }} className="section">
+          <h2 className="section-title">Up Coming</h2>
           {loading ? (
             <LoadingScreen />
           ) : (

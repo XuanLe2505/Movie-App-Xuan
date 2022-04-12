@@ -1,40 +1,34 @@
-import { Alert, Box, Container } from "@mui/material";
+import { Alert, Box, Container, Grid, Stack } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import MovieList from "../components/MovieList";
 import LoadingScreen from "../components/LoadingScreen";
-import tmdbApi from "../app/tmdbApi";
 import FilterGenres from "../components/FilterGenres";
+import MovieSearch from "../components/MovieSearch";
+import { FormProvider } from "../components/form";
+import MovieSort from "../components/MovieSort";
+import { useForm } from "react-hook-form";
+import useData from "../hooks/useData";
 
-const MAX_PAGES = 500;
+const defaultValues = {
+  sortBy: "",
+  searchQuery: "",
+};
 
 function BrowsePage() {
-  const [movies, setMovies] = useState([]);
+  const methods = useForm({ defaultValues });
+  const movies = useData().movies;
+  const currentPage = useData().currentPage;
+  const setCurrentPage = useData().setCurrentPage;
+  const totalPage = useData().totalPage;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [currentPage, setCurrentPage] = useState();
-  const [totalPage, setTotalPage] = useState();
 
   console.log("loading", loading);
 
-  const getMoviesList = async (params = {}) => {
+  const getMoviesList = async () => {
     setLoading(true);
 
-    const fetchParams = {
-      page: currentPage,
-      ...params,
-    };
-
     try {
-      const response = await tmdbApi.getMovies(fetchParams);
-      setMovies(response.results);
-      setTotalPage(
-        response.total_pages > MAX_PAGES ? MAX_PAGES : response.total_pages
-      );
-
-      if (params.page && currentPage !== params.page) {
-        setCurrentPage(params.page);
-      }
-
       setError("");
     } catch (error) {
       setError(error.message);
@@ -47,29 +41,42 @@ function BrowsePage() {
   }, [currentPage]);
 
   return (
-    <Container sx={{ height: "100vh", mt: 3 }}>
-      <FilterGenres
-        getMoviesList={getMoviesList}
-        setCurrentPage={setCurrentPage}
-      />
-      <Box sx={{ position: "relative", height: 1, width: "100%" }}>
-        {loading ? (
-          <LoadingScreen />
-        ) : (
-          <>
-            {error ? (
-              <Alert severity="error">{error}</Alert>
-            ) : (
-              <MovieList
-                movies={movies}
-                setCurrentPage={setCurrentPage}
-                totalPage={totalPage}
-                currentPage={currentPage}
-              />
-            )}
-          </>
-        )}
-      </Box>
+    <Container sx={{ height: "100%", mt: 3 }}>
+      <Stack spacing={2}>
+        <Stack>
+          <FilterGenres />
+        </Stack>
+
+        <Stack>
+          <Grid container spacing={4}>
+            <Grid item xs={8}>
+              <MovieSearch />
+            </Grid>
+            <Grid item xs={4}>
+              <FormProvider methods={methods}>
+                <MovieSort />
+              </FormProvider>
+            </Grid>
+          </Grid>
+        </Stack>
+      </Stack>
+
+      {loading ? (
+        <LoadingScreen />
+      ) : (
+        <>
+          {error ? (
+            <Alert severity="error">{error}</Alert>
+          ) : (
+            <MovieList
+              movies={movies}
+              setCurrentPage={setCurrentPage}
+              totalPage={totalPage}
+              currentPage={currentPage}
+            />
+          )}
+        </>
+      )}
     </Container>
   );
 }

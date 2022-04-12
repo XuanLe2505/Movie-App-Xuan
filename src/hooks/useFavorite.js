@@ -1,6 +1,10 @@
-import { FavoriteContext } from "../contexts/FavoriteContext";
-import { useContext } from "react";
 
-const useFavorite = () => useContext(FavoriteContext);
+import { useContext } from "react";
+import { FavoriteContext } from "../contexts/FavoriteContext";
+
+const useFavorite = () => {
+  return useContext(FavoriteContext);
+};
 
 export default useFavorite;
+

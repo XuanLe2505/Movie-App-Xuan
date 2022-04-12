@@ -3,18 +3,23 @@ import { useParams } from "react-router-dom";
 import tmdbApi from "../app/tmdbApi";
 import LoadingScreen from "../components/LoadingScreen";
 import MovieTrailer from "../components/MovieTrailer";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import { IconButton } from "@mui/material";
 
-import useFavorite from "../hooks/useFavorite";
 import useAuth from "../hooks/useAuth";
+import useFavorite from "../hooks/useFavorite";
+import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+
 
 import "./MovieDetails.css";
 
 const MovieDetails = () => {
   const [movie, setMovie] = useState();
   const { movieId } = useParams();
+  let navigate = useNavigate();
+  const isLogin = useAuth();
+  const idList = useFavorite().idList;
+  const setIdList = useFavorite().setIdList;
+  const location = useLocation();
 
   const { isAuthenticated } = useAuth();
   const { movieIds, addMovie, removeMovie } = useFavorite();
@@ -53,32 +58,35 @@ const MovieDetails = () => {
           </div>
 
           <div className="movie-content">
-            <div className="movie-title">
-              <h1 className="title" style={{ display: "inline-block" }}>
-                {movie.title || movie.name}
-              </h1>
-              {isAuthenticated ? (
-                <>
-                  {isAddedInFavorite ? (
-                    <IconButton
-                      size="large"
-                      sx={{ color: "white" }}
-                      onClick={() => removeMovie(movieId)}
-                    >
-                      <FavoriteIcon />
-                    </IconButton>
-                  ) : (
-                    <IconButton
-                      size="large"
-                      sx={{ color: "white" }}
-                      onClick={() => addMovie(movieId)}
-                    >
-                      <FavoriteBorderIcon />
-                    </IconButton>
-                  )}
-                </>
-              ) : null}
-            </div>
+
+            <h1 className="title">{movie.title || movie.name}</h1>{" "}
+            <span>
+              {idList[movie.id] ? (
+                <button
+                  className="favorite-btn"
+                  onClick={() => setIdList({ ...idList, [movie.id]: false })}
+                >
+                  {" "}
+                  Remove from Favorite{" "}
+                </button>
+              ) : (
+                <button
+                  className="favorite-btn"
+                  onClick={
+                    isLogin.isAuthenticated
+                      ? () =>
+                          setIdList({
+                            ...idList,
+                            [movie.id]: movie,
+                          })
+                      : () => navigate("/login")
+                  }
+                  state={{ backgroundLocation: location }}
+                >
+                  Add To Favorite
+                </button>
+              )}
+            </span>
 
             <div className="genres">
               {movie.genres.map(({ name, id }) => (

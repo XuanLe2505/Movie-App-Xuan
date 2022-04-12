@@ -1,116 +1,49 @@
-import { createContext, useReducer, useEffect } from "react";
 
+import React, { useState, createContext, useEffect } from "react";
 import useAuth from "../hooks/useAuth";
 
-const initialState = {
-  isInitialized: false,
-  movieIds: [],
+let idList = {};
+
+const contextdata = {
+  idList: idList,
+  setIdList: () => {},
 };
 
-const FavoriteContext = createContext(initialState);
+// const searchURL =
+//   "https://api.themoviedb.org/3/search/multi?api_key=7f43d469e4b124bca9e8aa24fe508eaf";
 
-const INITIALIZATION = "INITIALIZATION";
-const ADD_MOVIE = "ADD_MOVIE";
-const REMOVE_MOVIE = "REMOVE_MOVIE";
-const RESET_MOVIE = "RESET_MOVIE";
-const LOCAL_STORAGE_USER_MOVIE_IDS = "userMovieIds";
+export const FavoriteContext = createContext(contextdata);
 
-const reducer = (state, action) => {
-  switch (action.type) {
-    case INITIALIZATION:
-      return {
-        ...state,
-        isInitialized: true,
-        movieIds: action.payload.movieIds,
-      };
-    case ADD_MOVIE:
-      return {
-        ...state,
-        movieIds: [...state.movieIds, action.payload.movieId],
-      };
-    case REMOVE_MOVIE:
-      return {
-        ...state,
-        movieIds: state.movieIds.filter((id) => id !== action.payload.movieId),
-      };
-    case RESET_MOVIE:
-      return {
-        ...initialState,
-      };
-    default:
-      return state;
-  }
-};
-
-const FavoriteProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const { user } = useAuth();
+function FavoriteContextProvider({ children }) {
+  const [idList, setIdList] = useState({});
+  const isLogin = useAuth().isAuthenticated;
+  const userName = useAuth().user?.username;
 
   useEffect(() => {
-    const localStorageUserMovieIds = window.localStorage.getItem(
-      LOCAL_STORAGE_USER_MOVIE_IDS
-    );
-    if (user && localStorageUserMovieIds) {
-      const userMovieIds = JSON.parse(localStorageUserMovieIds);
-      dispatch({
-        type: INITIALIZATION,
-        payload: { movieIds: userMovieIds[user.username] },
-      });
-    } else {
-      dispatch({
-        type: INITIALIZATION,
-        payload: { movieIds: [] },
-      });
+    let list = {};
+    try {
+      list = JSON.parse(localStorage.getItem(userName)) || {};
+    } catch (error) {
+      list = {};
     }
-  }, [user]);
+    isLogin ? setIdList(list) : setIdList({});
+  }, [isLogin, userName]);
 
-  const addMovie = (movieId) => {
-    dispatch({ type: ADD_MOVIE, payload: { movieId } });
-
-    const localStorageMovieIds = JSON.parse(
-      localStorage.getItem(LOCAL_STORAGE_USER_MOVIE_IDS) || "{}"
-    );
-
-    const movieIds = localStorageMovieIds[user.username] || [];
-
-    window.localStorage.setItem(
-      LOCAL_STORAGE_USER_MOVIE_IDS,
-      JSON.stringify({
-        ...localStorageMovieIds,
-        [user.username]: [...movieIds, movieId],
-      })
-    );
-  };
-
-  const removeMovie = (movieId) => {
-    dispatch({ type: REMOVE_MOVIE, payload: { movieId } });
-
-    const localStorageMovieIds = JSON.parse(
-      localStorage.getItem(LOCAL_STORAGE_USER_MOVIE_IDS) || "{}"
-    );
-
-    const movieIds = localStorageMovieIds[user.username] || [];
-
-    window.localStorage.setItem(
-      LOCAL_STORAGE_USER_MOVIE_IDS,
-      JSON.stringify({
-        ...localStorageMovieIds,
-        [user.username]: movieIds.filter((id) => id !== movieId),
-      })
-    );
-  };
-
-  const resetMovie = () => {
-    dispatch({ type: RESET_MOVIE });
-  };
+  useEffect(() => {
+    localStorage.setItem(userName, JSON.stringify(idList));
+  }, [idList, userName]);
 
   return (
     <FavoriteContext.Provider
-      value={{ ...state, addMovie, removeMovie, resetMovie }}
+      value={{
+        idList: idList,
+        setIdList: setIdList,
+      }}
     >
       {children}
     </FavoriteContext.Provider>
   );
-};
+}
 
-export { FavoriteContext, FavoriteProvider };
+export default FavoriteContextProvider;
+
